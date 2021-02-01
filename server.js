@@ -6,6 +6,9 @@ const bodyparser = require('body-parser');
 const express = require('express');
 const { getMaxListeners } = require('process');
 const { ifError } = require('assert');
+
+const nodemailer = require('nodemailer');
+
 const PUBLISHABLE_KEY ="pk_test_51GsslZCLbCjfuC3EcKiGgU19kL43OVtYft4aN9poJwIZ669XCQ0wcHspYcEd7thFOoGOu0iKojTicG1D81ZQE13m00bYFEZ6JR";
 const SECRET_KEY ="sk_test_51GsslZCLbCjfuC3EA8Pgphmw8m4qsxgPO5Dv7qICrTTBulvAI6GvrV7IpYtyfNi4gnDurMVkgiq1B5KCSPxOX2l000yTI0K6tf";
 const stripe = require('stripe')(SECRET_KEY);
@@ -71,16 +74,38 @@ app.get('/vol/booking/:id',(req,res)=>{
 
 app.post('/vol/booking/:id',(req,res)=>{
     const volid = req.params.id;
-    let dat1 = {nom: req.body.nom, prenom: req.body.prenom, tele: req.body.tele, email: req.body.email, person: req.body.person, id_v: volid};
-    let sql1 = "INSERT INTO reservation SET ?";
-    connection.query(sql1, dat1,(err, results) => {
-        if(err) throw err;
-        res.redirect('/pay/' + volid);
-    });
+    const global = 20;
+    
+
+
+
+
+    // let sql4 = "SELECT nombre FROM reservation WHERE id_r = 40";
+    // connection.query(sql4, (err, results) => {
+    //     console.log(results)
+    //     if(err) throw err;
+    //     //res.redirect('/pay/' + volid);
+    // });
+    if (req.body.person) {
+        var toatal_numl = req.body.person;
+        var number= global - toatal_numl;
+        let dat1 = {nom: req.body.nom, prenom: req.body.prenom, tele: req.body.tele, email: req.body.email, person: req.body.person, id_v: volid , nombre:number};
+        let sql1 = "INSERT INTO reservation SET ?";
+        connection.query(sql1, dat1,(err, results) => {
+            if(err) throw err;
+            res.redirect('/pay/' + volid);
+        });
+    } else {
+
+        let alert = require('alert');  
+        alert("les places limitté a 20")
+    }
+  
 });
 
 app.get('/pay/:id',(req,res)=>{
     const volid = req.params.id;
+    console.log(volid);
     let sql2 = `Select * from vol where id_v = ${volid}`;
     connection.query(sql2, (err, result) => {
         if(err){
@@ -92,10 +117,14 @@ app.get('/pay/:id',(req,res)=>{
 });
 
 app.post('/pay/:id',(req,res)=>{
-    const volid = req.params.id;
+    let volid =  req.params.id;
+    console.log(volid);
     let dat2 = {ncart: req.body.ncart, datcart: req.body.datcart, nacart: req.body.nacart, prix: req.body.prix, cvv: req.body.cvv, id_v: volid};
+    console.log(dat2);
     let sql2 = "INSERT INTO payment SET ?";
+ 
     connection.query(sql2, dat2,(err, results) => {
+      //  console.log(results);
         if(err) throw err;
         res.redirect('/demande');
     });
@@ -109,9 +138,7 @@ app.get('/logout', function(req, res){
   });
 
 
-
- 
-app.post("/send", (req, res) => {
+app.post("/", (req, res) => {
 
    const output = `<h2>cas urgent</h2>
   <h3>les information de patient </h3>
@@ -136,15 +163,13 @@ let transporter = nodemailer.createTransport({
     }
   });
 
-
-
  // send mail with defined transport object
  let mailOptions = {
     from: 'elabyadsaloua@gmail.com', // sender address
     to: "salouaelabyad@gmail.com", // list of receivers
     subject: "Hello ✔", // Subject line
     text: "Hello world?", // plain text body
-    html: output // html body
+    html: output 
   };
 
  transporter.sendMail(mailOptions, (error, info) => {
@@ -157,7 +182,6 @@ let transporter = nodemailer.createTransport({
      res.render('demande' , {msg: 'has been sent'} );
  });
 });
-  
 
 app.listen(8080,()=>console.log('Express server is runing'));
-
+  
